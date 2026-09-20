@@ -1,0 +1,12 @@
+{
+  "name": "keypulse",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "mysql2": "^3.24.3"
+  }
+}

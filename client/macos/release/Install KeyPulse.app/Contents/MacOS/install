@@ -1,0 +1,31 @@
+#!/bin/bash
+set -euo pipefail
+
+RESOURCE_DIR="$(cd "$(dirname "$0")/../Resources" && pwd)"
+SOURCE_APP="$RESOURCE_DIR/KeyPulse.app"
+TARGET_APP="/Applications/KeyPulse.app"
+SUPPORT_DIR="$HOME/Library/Application Support/KeyPulse"
+PLIST="$HOME/Library/LaunchAgents/io.keypulse.agent.plist"
+
+if [[ ! -d "$SOURCE_APP" ]]; then
+  osascript -e 'display alert "安装失败" message "未找到 KeyPulse 应用包。" buttons {"好的"} default button 1' >&2
+  exit 1
+fi
+
+launchctl bootout "gui/$(id -u)/io.keypulse.agent" 2>/dev/null || launchctl unload -w "$PLIST" 2>/dev/null || true
+rm -f "$PLIST"
+killall KeyPulse 2>/dev/null || true
+killall KeyPulseAgent 2>/dev/null || true
+
+mkdir -p "$SUPPORT_DIR"
+if [[ ! -f "$SUPPORT_DIR/config.json" ]]; then
+  printf '%s\n' '{}' > "$SUPPORT_DIR/config.json"
+fi
+
+rm -rf "$TARGET_APP"
+ditto "$SOURCE_APP" "$TARGET_APP"
+open "$TARGET_APP"
+
+osascript <<'APPLESCRIPT'
+display alert "KeyPulse 已安装" message "请在菜单栏找到 KP 图标。\n\n若之前授权给 KeyPulseAgent，请先在「隐私与安全性」里删除旧条目，再为 /Applications/KeyPulse.app 重新开启「辅助功能」和「输入监控」。" buttons {"好的"} default button 1
+APPLESCRIPT

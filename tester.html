@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090911" />
+    <meta name="description" content="KeyPulse 108 键全尺寸键盘在线按键测试工具。" />
+    <title>按键测试 · KeyPulse</title>
+    <link rel="stylesheet" href="./landing.css" />
+    <link rel="stylesheet" href="./keyboard.css" />
+    <link rel="stylesheet" href="./tester.css" />
+  </head>
+  <body class="tester-body">
+    <header class="site-header tester-header">
+      <a class="brand" href="/"><span>K</span><strong>keypulse</strong></a>
+      <nav><a href="/">首页</a><a href="/community">报告广场</a><a class="active" href="/tester">按键测试</a></nav>
+      <div class="header-tools"><a class="personal-entry" href="/analyze"><i>⌁</i><span>我的报告</span></a></div>
+    </header>
+
+    <main class="tester-main">
+      <section class="tester-hero">
+        <div class="tester-grid"></div><div class="tester-glow"></div>
+        <div class="tester-hero-inner">
+          <div>
+            <p class="tester-eyebrow">KEYCAP CHECK / 108 KEYS</p>
+            <h1>换完键帽，<span>逐个确认。</span></h1>
+            <p>按下键盘上的任意按键，确认轴体触发与键位响应是否正常。</p>
+          </div>
+          <div class="tester-live"><i></i><span>监听中</span><small>请逐个按下按键</small></div>
+        </div>
+      </section>
+
+      <section class="tester-workspace">
+        <div class="tester-summary">
+          <article><span>测试进度</span><strong id="testedCount">0 <small>/ 108</small></strong><div class="progress"><i id="progressBar"></i></div></article>
+          <article><span>当前按键</span><strong id="currentKey">等待输入</strong><small id="currentCode">—</small></article>
+          <article><span>触发次数</span><strong id="pressCount">0</strong><small>本次测试</small></article>
+          <article><span>测试状态</span><strong class="status-value" id="testStatus"><i></i> 监听中</strong><small id="remainingText">还有 108 个按键待测试</small></article>
+        </div>
+
+        <div class="tester-panel">
+          <div class="tester-panel-head">
+            <div><p class="tester-eyebrow">FULL-SIZE KEYBOARD</p><h2>108 键全尺寸键盘</h2><p>紫色代表正在按下，绿色代表已成功触发。</p></div>
+            <div class="tester-actions">
+              <button type="button" class="tool-button primary" id="toggleTest"><span>Ⅱ</span> 暂停测试</button>
+              <button type="button" class="tool-button" id="showPending"><span>◉</span> 只看未测试</button>
+              <button type="button" class="tool-button danger" id="resetTest"><span>↻</span> 重新测试</button>
+            </div>
+          </div>
+          <div class="tester-board-stage" id="testerStage" tabindex="0" aria-label="108 键键盘测试区域">
+            <div class="kb-board layout-108" id="testerKeyboard"></div>
+          </div>
+          <div class="tester-legend"><span><i class="untested"></i>未测试</span><span><i class="pressing"></i>正在按下</span><span><i class="passed"></i>已通过</span><p>提示：Fn 与部分 M 宏键能否被网页识别取决于键盘驱动。</p></div>
+        </div>
+
+        <div class="tester-help">
+          <article><b>01</b><div><strong>逐个按下</strong><p>请单独按键，避免系统快捷键拦截组合输入。</p></div></article>
+          <article><b>02</b><div><strong>观察反馈</strong><p>按下时键帽会发光，松开后变绿即代表触发成功。</p></div></article>
+          <article><b>03</b><div><strong>排查异常</strong><p>重复按下没有反馈的键位，再检查轴体、热插拔座或触点。</p></div></article>
+        </div>
+      </section>
+    </main>
+
+    <div class="complete-toast" id="completeToast" role="status" aria-live="polite"><b>✓</b><div><strong>全部测试完成</strong><span>108 个按键均已成功触发</span></div><button type="button" id="closeToast" aria-label="关闭">×</button></div>
+    <script src="./keyboard-layouts.js"></script>
+    <script src="./tester.js"></script>
+  </body>
+</html>

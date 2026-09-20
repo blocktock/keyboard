@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KeyPulse · 键盘使用分析</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./keyboard.css" />
+    <link rel="stylesheet" href="./insight.css" />
+    <script>document.documentElement.dataset.view = location.pathname.startsWith('/community') ? 'community' : 'analyze'; if (document.documentElement.dataset.view === 'community') document.title = 'KeyPulse · 报告广场';</script>
+  </head>
+  <body class="insight-body">
+    <header class="insight-nav">
+      <a class="brand" href="/"><span class="brand-mark">K</span><span>keypulse</span></a>
+      <nav aria-label="主导航">
+        <a href="/">首页</a>
+        <a class="nav-community" href="/community">报告广场</a>
+        <a href="/tester">按键测试</a>
+      </nav>
+      <a class="personal-entry nav-analyze" href="/analyze"><i>⌁</i><span>我的报告</span></a>
+    </header>
+
+    <div class="insight-hero">
+      <div class="insight-glow"></div>
+      <div class="page page-hero-inner analyze-intro">
+        <p class="eyebrow">PERSONAL WORKSPACE</p>
+        <h1>我的键盘<span>使用报告。</span></h1>
+        <p>属于你的本地数据空间，上传记录并持续了解自己的输入习惯。</p>
+      </div>
+      <div class="page page-hero-inner community-intro">
+        <p class="eyebrow">COMMUNITY PULSE</p>
+        <h1>每一块键盘，<span>都有自己的故事。</span></h1>
+        <p>探索用户主动分享的脱敏报告，发现不同场景下的真实使用方式。</p>
+      </div>
+    </div>
+
+    <div class="page insight-content">
+      <section class="shared-view-banner hidden" id="sharedViewBanner">
+        <div class="shared-view-copy">
+          <a class="shared-back" href="/community">← 返回报告广场</a>
+          <p class="eyebrow">PUBLIC REPORT</p>
+          <h2 id="sharedViewTitle">公开报告</h2>
+          <p id="sharedViewMeta"></p>
+        </div>
+        <div class="shared-view-actions">
+          <span class="shared-privacy-badge"><i>✓</i> 已脱敏公开</span>
+          <button type="button" class="cancel-button hidden" id="deleteSharedReportButton">取消分享</button>
+        </div>
+      </section>
+      <header class="header content-heading">
+        <div><p class="eyebrow">MY KEYBOARD DATA</p><h2>个人分析空间</h2></div>
+        <span class="privacy-chip"><i></i> 本地数据 · 隐私优先</span>
+      </header>
+
+      <section class="upload-banner">
+        <div class="upload-status">
+          <span class="upload-symbol">⇧</span>
+          <div>
+            <strong id="uploadTitle">键盘使用分析</strong>
+            <p id="uploadNote">客户端停止记录后会自动上传；也可手动选择 JSON。导入后使用右侧「导出」保存 PNG。</p>
+          </div>
+        </div>
+        <div class="upload-controls">
+          <span class="upload-format">支持 .json · 最大 50 MB</span>
+          <button class="upload-report-button" id="selectReportButton">手动上传 JSON</button>
+          <input id="reportFileInput" type="file" accept="application/json,.json" hidden />
+        </div>
+      </section>
+
+      <section class="empty-state" id="emptyState">
+        <div class="empty-card">
+          <p class="empty-title">尚未加载报告</p>
+          <p class="empty-copy">上传后展示输入统计、键盘热力图与 AI 逐键轴体推荐。报告仅含键位频次，不含输入文本。</p>
+        </div>
+      </section>
+
+      <div id="analysisPanel" hidden>
+        <section class="metric-grid metric-grid-3">
+          <article class="metric-card">
+            <div class="metric-icon blue">⌁</div>
+            <p>总按键次数</p>
+            <strong id="totalPresses">—</strong>
+            <small id="inputStatsSummary">—</small>
+          </article>
+          <article class="metric-card">
+            <div class="metric-icon purple">◴</div>
+            <p>有效输入速率</p>
+            <strong id="activeKpm">—</strong>
+            <span class="detail-text" id="sessionDuration">—</span>
+            <small>排除超过 30 秒的空闲间隔</small>
+          </article>
+          <article class="metric-card">
+            <div class="metric-icon green">◎</div>
+            <p>使用键位</p>
+            <strong id="usedKeyCount">—</strong>
+            <span class="detail-text" id="loadIndex">—</span>
+            <small>负载指数</small>
+          </article>
+        </section>
+
+        <p class="data-warning hidden" id="dataWarnings"></p>
+
+        <section class="panel-card ai-panel" id="aiExportCard">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">AI ANALYSIS</p>
+              <h2>AI 分析与轴体推荐</h2>
+            </div>
+            <span class="profile-badge hidden" id="usageProfileBadge"></span>
+          </div>
+          <p class="ai-summary" id="aiSummary">—</p>
+          <p class="ai-hotzone hidden" id="aiHotZone"></p>
+          <div class="ai-overall hidden" id="aiOverall"></div>
+          <ul class="ai-cautions hidden" id="aiCautions"></ul>
+          <p class="ai-note hidden" id="aiNote"></p>
+        </section>
+
+        <article class="panel-card keyboard-card keyboard-card-full" id="heatmapExportCard">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">KEY MAP</p>
+              <h2>键盘热力图</h2>
+            </div>
+            <div class="keyboard-heading-actions">
+              <label class="layout-picker">
+                <span>配列</span>
+                <select id="layoutSelect" class="layout-select"></select>
+              </label>
+              <div class="legend">
+                <span><i class="legend-low"></i>未使用</span>
+                <span><i class="legend-mid"></i>常用</span>
+                <span><i class="legend-high"></i>高频</span>
+              </div>
+            </div>
+          </div>
+          <p class="heatmap-export-meta hidden" id="heatmapExportMeta"></p>
+          <p class="muted keyboard-desc" id="keyboardDesc">选择与实际键盘一致的配列，热力图会自动对齐键位。</p>
+          <div class="keyboard-stage">
+            <div class="keyboard" id="keyboardLayout"></div>
+          </div>
+        </article>
+
+        <section class="panel-card per-key-panel" id="switchExportCard">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">SWITCH RECOMMENDATION</p>
+              <h2>轴体推荐</h2>
+              <p class="muted" id="perKeySummary">相同推荐已聚合，点击展开查看键位分布</p>
+            </div>
+          </div>
+          <div class="rec-group-list" id="perKeyGroupList"></div>
+        </section>
+
+        <section class="panel-card activity-card hidden" id="activitySection">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">ACTIVITY</p>
+              <h2 id="activityChartTitle">按键活跃趋势</h2>
+            </div>
+          </div>
+          <div class="chart-wrap" id="activityChart"></div>
+        </section>
+      </div>
+
+      <section class="shared-reports-section" id="sharedReports">
+        <div class="shared-reports-heading">
+          <div>
+            <p class="eyebrow">COMMUNITY</p>
+            <h2>探索公开报告</h2>
+            <p class="muted">仅展示用户主动分享的脱敏分析，不含原始按键事件和精确时间。</p>
+          </div>
+          <div class="shared-filters">
+            <select id="shareSceneFilter" class="layout-select" aria-label="使用场景">
+              <option value="">全部场景</option>
+              <option value="programming">编程</option>
+              <option value="gaming">游戏</option>
+              <option value="typing">办公打字</option>
+              <option value="mixed">混合使用</option>
+              <option value="other">其他</option>
+            </select>
+            <select id="shareSortFilter" class="layout-select" aria-label="排序">
+              <option value="latest">最新分享</option>
+              <option value="presses">按键量最高</option>
+              <option value="load">负载最高</option>
+            </select>
+          </div>
+        </div>
+        <div class="shared-report-grid" id="sharedReportGrid">
+          <p class="gallery-status">正在加载公开报告…</p>
+        </div>
+        <button type="button" class="gallery-more hidden" id="galleryMoreButton">加载更多</button>
+      </section>
+
+      <div class="export-fab hidden" id="exportFab">
+        <button type="button" class="export-fab-button" id="exportFabButton" aria-expanded="false">导出</button>
+        <div class="export-fab-menu hidden" id="exportFabMenu">
+          <button type="button" id="shareCurrentButton">分享本次记录</button>
+          <button type="button" data-export="heatmap">热力图 PNG</button>
+          <button type="button" data-export="ai">AI 分析 PNG</button>
+          <button type="button" data-export="switches">轴体推荐 PNG</button>
+          <button type="button" data-export="full">完整报告 PNG</button>
+        </div>
+      </div>
+
+      <dialog id="shareDialog" class="share-dialog">
+        <button type="button" class="dialog-close" data-close-dialog="shareDialog" aria-label="关闭">×</button>
+        <p class="eyebrow">SHARE REPORT</p>
+        <h2>是否分享本次记录？</h2>
+        <p>分享后会保存脱敏分析到报告广场。不会公开原始事件、按键顺序、精确时间或本地路径。</p>
+        <form id="shareForm">
+          <label class="share-field">
+            <span>报告标题</span>
+            <input id="shareTitle" name="title" maxlength="80" value="我的 KeyPulse 报告" required />
+          </label>
+          <div class="share-form-row">
+            <label class="share-field">
+              <span>昵称</span>
+              <input id="shareDisplayName" name="displayName" maxlength="40" placeholder="匿名用户" />
+            </label>
+            <label class="share-field">
+              <span>使用场景</span>
+              <select id="shareUsageScene" name="usageScene">
+                <option value="mixed">混合使用</option>
+                <option value="programming">编程</option>
+                <option value="gaming">游戏</option>
+                <option value="typing">办公打字</option>
+                <option value="other">其他</option>
+              </select>
+            </label>
+          </div>
+          <div class="share-privacy">
+            <strong>将公开</strong>
+            <p>聚合键位次数、热力图、输入速率、负载指数及 AI 推荐。</p>
+            <strong>不会公开</strong>
+            <p>原始事件、按键顺序、毫秒时间戳、精确开始时间和设备信息。</p>
+          </div>
+          <label class="share-consent">
+            <input id="shareConsent" type="checkbox" required />
+            <span>我确认公开以上脱敏数据</span>
+          </label>
+          <p class="share-error hidden" id="shareError"></p>
+          <div class="report-actions">
+            <button type="button" class="cancel-button" data-close-dialog="shareDialog">暂不分享</button>
+            <button type="submit" class="upload-button" id="confirmShareButton">匿名分享</button>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog id="shareSuccessDialog">
+        <button type="button" class="dialog-close" data-close-dialog="shareSuccessDialog" aria-label="关闭">×</button>
+        <p class="eyebrow">SHARED</p>
+        <h2>分享成功</h2>
+        <p>报告已保存到报告广场，你可以复制公开链接或稍后取消分享。</p>
+        <input class="share-url-input" id="shareUrlInput" readonly />
+        <div class="report-actions">
+          <button type="button" class="cancel-button" id="copyShareUrlButton">复制链接</button>
+          <button type="button" class="upload-button" id="viewSharedReportButton">查看报告</button>
+        </div>
+      </dialog>
+
+      <dialog id="sharedDetailDialog" class="shared-detail-dialog">
+        <button type="button" class="dialog-close" data-close-dialog="sharedDetailDialog" aria-label="关闭">×</button>
+        <div id="sharedDetailContent"></div>
+        <div class="report-actions">
+          <button type="button" class="upload-button" data-close-dialog="sharedDetailDialog">完成</button>
+        </div>
+      </dialog>
+    </div>
+    <script src="./html2canvas.min.js"></script>
+    <script src="./keyboard-layouts.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

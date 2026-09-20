@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090911" />
+    <meta name="description" content="KeyPulse 以隐私优先的方式记录物理键位，生成键盘热力图、输入节奏与 AI 轴体建议。" />
+    <title>KeyPulse · 看见你的每一次敲击</title>
+    <link rel="stylesheet" href="./landing.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/"><span>K</span><strong>keypulse</strong></a>
+      <nav><a class="active" href="/">首页</a><a href="/community">报告广场</a><a href="/tester">按键测试</a></nav>
+      <div class="header-tools">
+        <a class="personal-entry" href="/analyze"><i>⌁</i><span>我的报告</span></a>
+        <button class="nav-download" data-open-download>下载客户端 <i>↗</i></button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-grid"></div><div class="glow glow-a"></div><div class="glow glow-b"></div>
+        <div class="hero-copy">
+          <div class="kicker"><i></i> 本地优先的键盘洞察工具 <span>V0.1</span></div>
+          <h1>让每一次敲击<br />都变成<span>洞察。</span></h1>
+          <p>看见你的键盘热区、输入节奏与使用负载。KeyPulse 用数据读懂习惯，再由 AI 为每个区域推荐真正适合你的轴体。</p>
+          <div class="actions"><a class="button primary" href="/analyze?upload=1">开始分析 <span>→</span></a><button class="button ghost" data-open-download>免费下载客户端</button></div>
+          <div class="trust"><span><i>✓</i> 不记录输入内容</span><span><i>✓</i> 数据默认留在本机</span><span><i>✓</i> 分享由你决定</span></div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+          <div class="dashboard">
+            <div class="window-bar"><span class="dots"><i></i><i></i><i></i></span><small>KEYPULSE / LIVE SESSION</small><span class="live"><i></i> LIVE</span></div>
+            <div class="dashboard-content">
+              <div class="dash-title"><div><small>SESSION OVERVIEW</small><strong>今晚的输入状态</strong></div><time>01:42:18</time></div>
+              <div class="metrics"><article><span>总按键</span><strong>12,847</strong><em>↗ 18.4%</em></article><article><span>有效速率</span><strong>286</strong><small>KPM</small></article><article><span>负载指数</span><strong>73</strong><small>/ 100</small></article></div>
+              <div class="heatmap"><div class="panel-title"><span>键位热力图</span><small>87 KEYS · REALTIME</small></div><div class="keyboard" id="heroKeyboard"></div></div>
+              <div class="dash-bottom">
+                <div class="rhythm"><div class="panel-title"><span>输入节奏</span><small>LAST 60 MIN</small></div><svg viewBox="0 0 420 90" aria-label="输入节奏走势图"><defs><linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8e78ff" stop-opacity=".45"/><stop offset="1" stop-color="#8e78ff" stop-opacity="0"/></linearGradient></defs><path class="area" d="M0 77C25 74 28 57 48 63S78 79 96 50s34 6 52-9 34 23 55-4 34 6 56-17 34 27 59 9 31-13 49-3 29-15 55-12V90H0Z"/><path class="line" d="M0 77C25 74 28 57 48 63S78 79 96 50s34 6 52-9 34 23 55-4 34 6 56-17 34 27 59 9 31-13 49-3 29-15 55-12"/></svg></div>
+                <div class="ai-tip"><b>✦</b><div><small>AI 建议</small><strong>WASD 区域适合<br />轻压力线性轴</strong></div></div>
+              </div>
+            </div>
+          </div>
+          <aside class="float-card top"><span>最高频键</span><strong>Space</strong><small>2,481 次</small></aside>
+          <aside class="float-card bottom"><b>✦</b><div><span>输入状态</span><strong>专注且稳定</strong></div></aside>
+        </div>
+      </section>
+
+      <section class="features section">
+        <div class="section-title centered"><p>FROM SIGNAL TO INSIGHT</p><h2>不是统计工具，是你的<span>键盘体检报告</span></h2><small>从采集到建议，把无形的使用习惯变成清晰、可行动的结论。</small></div>
+        <div class="feature-grid">
+          <article class="feature heat-feature"><label>01 / HEATMAP</label><h3>每一个高频键，<br />都有迹可循。</h3><p>精准映射 68 / 84 / 87 / 108 配列，以热力强度直观呈现手指负载与使用盲区。</p><div class="feature-keys"><i>Q</i><i>W</i><i>E</i><i>R</i><i>T</i><i>A</i><i>S</i><i>D</i><i>F</i><i>G</i></div></article>
+          <article class="feature rhythm-feature"><label>02 / RHYTHM</label><h3>读懂你的输入节奏</h3><p>自动排除空闲时间，还原真实速率、会话时长和高强度时段。</p><div class="bars" id="rhythmBars"></div></article>
+          <article class="feature ai-feature"><b class="ai-orb">✦</b><label>03 / AI ADVISOR</label><h3>给不同区域，<br />真正合适的手感</h3><p>综合频次、间隔与使用场景，为功能区分组推荐轴体。</p><div class="rec"><span>高频字母区</span><strong>轻压力线性轴</strong><em>96% 匹配</em></div><div class="rec"><span>功能键区</span><strong>清晰段落轴</strong><em>89% 匹配</em></div></article>
+        </div>
+      </section>
+
+      <section class="workflow">
+        <div class="section-title split"><div><p>HOW IT WORKS</p><h2>三分钟开始，<br />持续了解自己。</h2></div><small>轻量客户端静默驻留，记录你允许的物理键位数据。停止后生成本地报告，由你决定是否分析或分享。</small></div>
+        <div class="steps"><div class="step-line"></div><article><label>01</label><b>↓</b><h3>下载并启动</h3><p>支持 macOS 与 Windows，安装后设置本地存储位置。</p></article><article><label>02</label><b>●</b><h3>记录使用习惯</h3><p>手动开始与停止，全程只采集白名单物理键位。</p></article><article><label>03</label><b>⌁</b><h3>生成深度分析</h3><p>上传本地 JSON，即刻查看热力图、节奏与 AI 建议。</p></article></div>
+      </section>
+
+      <section class="privacy">
+        <div class="privacy-art"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div><div class="shield"><b>⌁</b><strong>LOCAL</strong><small>PRIVATE DATA</small></div></div>
+        <div class="privacy-copy"><div class="section-title"><p>PRIVACY BY DESIGN</p><h2>你的习惯，<br />不该成为别人的数据。</h2></div><p>我们只关心“哪个物理键被按下”，永远不知道你输入了什么。</p><ul><li><i>✓</i><div><strong>不读取上下文</strong><span>不采集文字、剪贴板、窗口标题或应用信息</span></div></li><li><i>✓</i><div><strong>本地存储优先</strong><span>原始数据默认保存在你的设备，不自动上传</span></div></li><li><i>✓</i><div><strong>分享由你决定</strong><span>公开前移除原始事件、按键顺序与精确时间</span></div></li></ul></div>
+      </section>
+
+    </main>
+
+    <footer id="download"><a class="brand" href="/"><span>K</span><strong>keypulse</strong></a><p>© 2026 KeyPulse. Know your keys. Know yourself.</p><div><a href="/analyze">我的报告</a><a href="/community">报告广场</a><a href="/?download=1" data-open-download>下载</a></div></footer>
+
+    <dialog id="downloadDialog"><button class="close" aria-label="关闭">×</button><label>GET KEYPULSE</label><h2>选择你的系统</h2><p>安装轻量记录器，数据默认只保存在你的设备。</p><div class="download-options"><a href="/download/macos"><b>⌘</b><span><strong>macOS</strong><small>Apple Silicon / Intel</small></span><i>→</i></a><a href="/download/windows"><b>⊞</b><span><strong>Windows</strong><small>Windows 10 / 11</small></span><i>→</i></a></div></dialog>
+    <script src="./landing.js"></script>
+  </body>
+</html>
