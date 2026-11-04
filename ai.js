@@ -16,7 +16,7 @@ const SYSTEM_PROMPT = `你是 KeyPulse 键盘使用分析助手。你会收到�
 4. 必须为 usedKeys 中的每一个键返回 keyRecommendations 条目，不得遗漏。
 5. 每个 keyRecommendations 条目需包含 switch（轴体型号）、tag（简短类型标签）、specs（触发行程/压力等）、reason（推荐理由）。
 6. 轴体推荐应结合该键的使用频次、占比与间隔特征，给出个性化建议。
-7. 语气简洁、专业，像给用户的个性化报告。
+7. 语气简洁、专业，像给用户的个性化报告。每个键的 reason 控制在 40 个汉字以内，避免重复冗长的描述。
 
 JSON 结构：
 {
@@ -55,7 +55,12 @@ function buildUserPrompt(analysis) {
 }
 
 function parseAIContent(content, usedKeyCount) {
-  const parsed = JSON.parse(content);
+  let parsed;
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    throw new Error('AI 返回的分析不是完整有效的 JSON，请重试');
+  }
   if (!parsed.summary || !parsed.switchRecommendation?.primary) {
     throw new Error('AI 返回结构不完整');
   }
@@ -161,7 +166,8 @@ async function enrichWithAI(analysis) {
         ],
         response_format: { type: 'json_object' },
         thinking: { type: 'disabled' },
-        max_tokens: 4096,
+        // Reserve enough output for every key, including Chinese explanations.
+        max_tokens: Math.min(32768, Math.max(4096, 2048 + (analysis.usedKeys?.length || analysis.usedKeyCount || 0) * 256)),
         temperature: 0.4
       }),
       signal: AbortSignal.timeout(timeoutMs)
@@ -172,7 +178,11 @@ async function enrichWithAI(analysis) {
       throw new Error(payload.error?.message || payload.message || `DeepSeek HTTP ${response.status}`);
     }
 
-    const content = payload.choices?.[0]?.message?.content;
+    const choice = payload.choices?.[0];
+    if (choice?.finish_reason === 'length') {
+      throw new Error('AI 分析达到输出长度上限，返回内容被截断，请重试');
+    }
+    const content = choice?.message?.content;
     if (!content) throw new Error('DeepSeek 未返回内容');
 
     return applyAIAnalysis(analysis, parseAIContent(content, analysis.usedKeyCount));
