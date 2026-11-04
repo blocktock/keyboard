@@ -1,5 +1,6 @@
 const mysql = require('mysql2/promise');
 const { createHash, randomBytes, randomUUID } = require('node:crypto');
+const { displayTitle, recommendLayouts } = require('./report-insights');
 
 let pool;
 let initialized = false;
@@ -89,6 +90,7 @@ function publicSnapshot(analysis) {
     cautions: analysis.cautions || [],
     recommendation: analysis.recommendation || null,
     secondaryRecommendation: analysis.secondaryRecommendation || null,
+    layoutRecommendation: recommendLayouts(analysis),
     perKeyRecommendations: analysis.perKeyRecommendations || [],
     ai: analysis.ai ? {
       provider: analysis.ai.provider,
@@ -106,7 +108,7 @@ function parseSnapshot(value) {
 function mapSummary(row) {
   return {
     id: row.id,
-    title: row.title,
+    title: displayTitle(row.title, { topKey: row.top_key, totalKeyDowns: Number(row.total_key_downs) }, row.usage_scene),
     displayName: row.display_name,
     usageScene: row.usage_scene,
     keyboardLayout: row.keyboard_layout,
@@ -129,7 +131,7 @@ async function createSharedReport(analysis, input) {
   const topKey = snapshot.topKeys[0] || null;
   const allowedScenes = new Set(['gaming', 'typing', 'programming', 'mixed', 'other']);
   const usageScene = allowedScenes.has(input.usageScene) ? input.usageScene : 'mixed';
-  const title = cleanText(input.title, '我的 KeyPulse 报告', 80);
+  const title = displayTitle(cleanText(input.title, '', 80), analysis, usageScene);
   const displayName = cleanText(input.displayName, '匿名用户', 40);
 
   await db.execute(`
@@ -209,13 +211,14 @@ async function getSharedReport(id) {
     LIMIT 1
   `, [id]);
   if (!rows[0]) return null;
+  const analysis = parseSnapshot(rows[0].public_snapshot);
   return {
     id: rows[0].id,
-    title: rows[0].title,
+    title: displayTitle(rows[0].title, analysis, rows[0].usage_scene),
     displayName: rows[0].display_name,
     usageScene: rows[0].usage_scene,
     createdAt: new Date(rows[0].created_at).toISOString(),
-    analysis: parseSnapshot(rows[0].public_snapshot)
+    analysis: { ...analysis, layoutRecommendation: recommendLayouts(analysis) }
   };
 }
 

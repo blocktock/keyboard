@@ -1,5 +1,5 @@
 let heat = {};
-let currentLayoutId = localStorage.getItem('keypulse.layout') || '108';
+let currentLayoutId = resolveLayoutId();
 let activeRecGroupKeys = null;
 
 const emptyState = document.getElementById('emptyState');
@@ -42,6 +42,7 @@ let currentShareDraftToken = null;
 let currentSharedReportId = null;
 let latestSharedReportId = null;
 let galleryPage = 1;
+let suggestedShareTitle = '';
 
 const ANALYSIS_STORAGE_KEY = 'keypulse.analysis';
 const SHARE_REVOKE_PREFIX = 'keypulse.share.revoke.';
@@ -50,6 +51,7 @@ const EXPORT_TARGETS = {
   heatmap: { selector: '#heatmapExportCard', prefix: 'keypulse-heatmap', hide: ['.layout-picker'] },
   ai: { selector: '#aiExportCard', prefix: 'keypulse-ai' },
   switches: { selector: '#switchExportCard', prefix: 'keypulse-switches' },
+  layouts: { selector: '#layoutExportCard', prefix: 'keypulse-layouts' },
   full: { selector: '#analysisPanel', prefix: 'keypulse-report', hide: ['.layout-picker', '.export-fab'] }
 };
 
@@ -69,9 +71,10 @@ function initLayoutSelect() {
 function resolveLayoutId(reportLayout) {
   if (reportLayout) {
     const normalized = String(reportLayout).toLowerCase();
-    if (REPORT_LAYOUT_MAP[normalized]) return REPORT_LAYOUT_MAP[normalized];
+    if (KEYBOARD_LAYOUTS[REPORT_LAYOUT_MAP[normalized]]) return REPORT_LAYOUT_MAP[normalized];
   }
-  return localStorage.getItem('keypulse.layout') || '108';
+  const saved = localStorage.getItem('keypulse.layout');
+  return KEYBOARD_LAYOUTS[saved] ? saved : '108';
 }
 
 function updateLayoutMeta() {
@@ -234,7 +237,7 @@ function renderPerKeyGroups(items, ai) {
 
   if (!items?.length) {
     const message = ai?.generated ? '暂无轴体推荐' : getAiUnavailableMessage(ai);
-    container.innerHTML = `<p class="table-empty">${message}</p>`;
+    container.innerHTML = `<p class="table-empty">${escapeHtml(message || '等待 AI 分析')}</p>`;
     summary.textContent = ai?.generated
       ? '暂无轴体推荐'
       : (isMissingApiKey(ai) ? '轴体推荐完全由 AI 生成，请先配置 API Key' : (ai?.reason || '等待 AI 分析'));
@@ -249,9 +252,9 @@ function renderPerKeyGroups(items, ai) {
       <button class="rec-group-head" type="button" aria-expanded="false">
         <div class="rec-group-main">
           <div class="rec-group-title">
-            <span class="tag ${tagClass(group.tag)}">${group.tag}</span>
-            <strong>${group.switch}</strong>
-            ${group.specs ? `<small>${group.specs}</small>` : ''}
+            <span class="tag ${tagClass(group.tag)}">${escapeHtml(group.tag)}</span>
+            <strong>${escapeHtml(group.switch)}</strong>
+            ${group.specs ? `<small>${escapeHtml(group.specs)}</small>` : ''}
           </div>
           <p class="rec-group-stats">${group.keys.length} 个键位 · ${group.totalCount.toLocaleString()} 次 · 占 ${group.totalShare}%</p>
           <p class="rec-group-preview">${group.keys.slice(0, 8).map(item => formatKeyLabel(item.key)).join(' · ')}${group.keys.length > 8 ? ' …' : ''}</p>
@@ -259,7 +262,7 @@ function renderPerKeyGroups(items, ai) {
         <span class="rec-group-chevron">›</span>
       </button>
       <div class="rec-group-body hidden">
-        <p class="rec-group-reason">${group.reason}</p>
+        <p class="rec-group-reason">${escapeHtml(group.reason)}</p>
         <div class="rec-key-grid">${renderKeyDistribution(group.keys)}</div>
       </div>
     </article>
@@ -386,6 +389,11 @@ function renderAiOverall(recommendation, secondary) {
     el.innerHTML = '';
     return;
   }
+  const safe = entry => entry && Object.fromEntries(
+    Object.entries(entry).map(([key, value]) => [key, escapeHtml(value)])
+  );
+  recommendation = safe(recommendation);
+  secondary = safe(secondary);
   el.classList.remove('hidden');
   el.innerHTML = `
     <div class="overall-rec">
@@ -407,6 +415,23 @@ function renderAiOverall(recommendation, secondary) {
   `;
 }
 
+function renderLayoutRecommendations(analysis) {
+  const recommendation = ReportInsights.recommendLayouts(analysis);
+  document.getElementById('layoutEvidence').innerHTML = recommendation.evidence
+    .map(item => `<span>${escapeHtml(item)}</span>`).join('');
+  document.getElementById('layoutRecommendations').innerHTML = [recommendation.primary, recommendation.secondary]
+    .map((item, index) => `
+      <article class="layout-option ${index === 0 ? 'is-primary' : ''}">
+        <p class="eyebrow">${index === 0 ? '首选布局' : '备选布局'}</p>
+        <h3>${escapeHtml(item.label)}</h3>
+        <p>${escapeHtml(item.description)}</p>
+        <p>${escapeHtml(item.reason)}</p>
+        <p class="layout-tradeoff">取舍 · ${escapeHtml(item.tradeoff)}</p>
+      </article>
+    `).join('');
+  document.getElementById('layoutRecommendationNote').textContent = recommendation.note;
+}
+
 function setAiNote(analysis) {
   const summaryEl = document.getElementById('aiSummary');
   const hotZoneEl = document.getElementById('aiHotZone');
@@ -422,7 +447,7 @@ function setAiNote(analysis) {
 
   if (analysis.hotZoneAdvice) {
     hotZoneEl.classList.remove('hidden');
-    hotZoneEl.innerHTML = `<strong>热区建议：</strong>${analysis.hotZoneAdvice}`;
+    hotZoneEl.textContent = `热区建议：${analysis.hotZoneAdvice}`;
   } else {
     hotZoneEl.classList.add('hidden');
     hotZoneEl.textContent = '';
@@ -439,7 +464,7 @@ function setAiNote(analysis) {
 
   if (analysis.cautions?.length) {
     cautionsEl.classList.remove('hidden');
-    cautionsEl.innerHTML = analysis.cautions.map(item => `<li>${item}</li>`).join('');
+    cautionsEl.innerHTML = analysis.cautions.map(item => `<li>${escapeHtml(item)}</li>`).join('');
   } else {
     cautionsEl.classList.add('hidden');
     cautionsEl.innerHTML = '';
@@ -570,6 +595,15 @@ function usageSceneLabel(scene) {
   }[scene] || '混合使用';
 }
 
+function updateSuggestedShareTitle() {
+  const input = document.getElementById('shareTitle');
+  const next = ReportInsights.buildReportTitle(currentAnalysis, document.getElementById('shareUsageScene').value);
+  if (!input.value.trim() || input.value === suggestedShareTitle) input.value = next;
+  suggestedShareTitle = next;
+}
+
+document.getElementById('shareUsageScene').addEventListener('change', updateSuggestedShareTitle);
+
 function openShareDialog() {
   closeExportMenu();
   if (!currentShareDraftToken) {
@@ -581,9 +615,7 @@ function openShareDialog() {
   shareError.classList.add('hidden');
   shareError.textContent = '';
   document.getElementById('shareConsent').checked = false;
-  const profile = currentAnalysis?.usageProfile;
-  document.getElementById('shareUsageScene').value =
-    ['gaming', 'typing', 'mixed'].includes(profile) ? profile : 'mixed';
+  updateSuggestedShareTitle();
   shareDialog.showModal();
 }
 
@@ -638,7 +670,7 @@ function renderSharedReportCards(items, append = false) {
       </div>
       <div class="shared-report-tags">
         <span>${escapeHtml(usageSceneLabel(item.usageScene))}</span>
-        <span>${escapeHtml(item.keyboardLayout)}</span>
+        <span>${escapeHtml(ReportInsights.layoutLabel(item.keyboardLayout))}</span>
         ${item.topKey ? `<span>高频 ${escapeHtml(formatKeyLabel(item.topKey))}</span>` : ''}
       </div>
     </button>
@@ -769,6 +801,10 @@ function applyAnalysis(analysis, {
   const previous = persist ? loadStoredAnalysis() : null;
   const enriched = enrichAnalysisDelta(analysis, previous);
   currentAnalysis = enriched;
+  document.getElementById('shareTitle').value = '';
+  suggestedShareTitle = '';
+  document.getElementById('shareUsageScene').value =
+    ['gaming', 'typing', 'mixed'].includes(enriched.usageProfile) ? enriched.usageProfile : 'mixed';
   currentShareDraftToken = shareDraftToken;
   shareCurrentButton.hidden = !currentShareDraftToken;
   if (persist) persistAnalysis(enriched);
@@ -784,7 +820,7 @@ function applyAnalysis(analysis, {
   currentLayoutId = resolveLayoutId(enriched.keyboardLayout);
   layoutSelect.value = currentLayoutId;
 
-renderKeyboard();
+  renderKeyboard();
   renderInputStats(enriched);
   renderPerKeyTable(enriched.perKeyRecommendations, enriched.ai);
 
@@ -796,13 +832,16 @@ renderKeyboard();
 
   setDataWarnings(enriched.dataWarnings);
   setAiNote(enriched);
+  renderLayoutRecommendations(enriched);
   renderActivityChart(enriched.activityTimeline);
   updateExportMeta(enriched);
   updateUploadBannerFromAnalysis(enriched);
   exportFab.classList.remove('hidden');
   setView(true);
   if (promptShare && currentShareDraftToken) {
-    window.setTimeout(() => shareDialog.showModal(), 250);
+    window.setTimeout(() => {
+      if (currentAnalysis === enriched && currentShareDraftToken) openShareDialog();
+    }, 250);
   }
 }
 

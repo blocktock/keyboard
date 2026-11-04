@@ -70,7 +70,7 @@
       <section class="empty-state" id="emptyState">
         <div class="empty-card">
           <p class="empty-title">尚未加载报告</p>
-          <p class="empty-copy">上传后展示输入统计、键盘热力图与 AI 逐键轴体推荐。报告仅含键位频次，不含输入文本。</p>
+          <p class="empty-copy">上传后展示输入统计、键盘热力图、布局建议与 AI 逐键轴体推荐，不展示输入文本。</p>
         </div>
       </section>
 
@@ -123,7 +123,7 @@
             </div>
             <div class="keyboard-heading-actions">
               <label class="layout-picker">
-                <span>配列</span>
+                <span>热力图配列</span>
                 <select id="layoutSelect" class="layout-select"></select>
               </label>
               <div class="legend">
@@ -139,6 +139,20 @@
             <div class="keyboard" id="keyboardLayout"></div>
           </div>
         </article>
+
+        <section class="panel-card layout-recommendation-panel" id="layoutExportCard">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">KEYBOARD LAYOUT</p>
+              <h2>推荐键盘布局</h2>
+              <p class="muted">从常用键区出发，选择适合你的键盘配列</p>
+            </div>
+            <span class="profile-badge">基于键位统计</span>
+          </div>
+          <div class="layout-evidence" id="layoutEvidence"></div>
+          <div class="layout-recommendation-grid" id="layoutRecommendations"></div>
+          <p class="layout-recommendation-note" id="layoutRecommendationNote"></p>
+        </section>
 
         <section class="panel-card per-key-panel" id="switchExportCard">
           <div class="panel-heading">
@@ -198,6 +212,7 @@
           <button type="button" data-export="heatmap">热力图 PNG</button>
           <button type="button" data-export="ai">AI 分析 PNG</button>
           <button type="button" data-export="switches">轴体推荐 PNG</button>
+          <button type="button" data-export="layouts">布局推荐 PNG</button>
           <button type="button" data-export="full">完整报告 PNG</button>
         </div>
       </div>
@@ -210,7 +225,7 @@
         <form id="shareForm">
           <label class="share-field">
             <span>报告标题</span>
-            <input id="shareTitle" name="title" maxlength="80" value="我的 KeyPulse 报告" required />
+            <input id="shareTitle" name="title" maxlength="80" placeholder="根据本次记录自动生成，可修改" required />
           </label>
           <div class="share-form-row">
             <label class="share-field">
@@ -267,6 +282,7 @@
       </dialog>
     </div>
     <script src="./html2canvas.min.js"></script>
+    <script src="./report-insights.js"></script>
     <script src="./keyboard-layouts.js"></script>
     <script src="./app.js"></script>
   </body>

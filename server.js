@@ -38,6 +38,7 @@ const publicFiles = new Map([
   ['/community', 'index.html'], ['/styles.css', 'styles.css'], ['/insight.css', 'insight.css'], ['/landing.css', 'landing.css'], ['/landing.js', 'landing.js'],
   ['/tester', 'tester.html'], ['/tester.html', 'tester.html'], ['/tester.css', 'tester.css'], ['/tester.js', 'tester.js'],
   ['/keyboard.css', 'keyboard.css'], ['/app.js', 'app.js'], ['/keyboard-layouts.js', 'keyboard-layouts.js'],
+  ['/report-insights.js', 'report-insights.js'],
   ['/download/macos', path.join('downloads', 'KeyPulse-macOS.zip')],
   ['/html2canvas.min.js', path.join('node_modules', 'html2canvas', 'dist', 'html2canvas.min.js')]
 ]);

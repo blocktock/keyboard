@@ -1,3 +1,5 @@
+const { recommendLayouts } = require('./report-insights');
+
 function deepSeekConfig() {
   return {
     apiKey: process.env.DEEPSEEK_API_KEY,
@@ -146,6 +148,7 @@ function emptyAIResult(analysis, reason) {
 }
 
 async function enrichWithAI(analysis) {
+  analysis = { ...analysis, layoutRecommendation: recommendLayouts(analysis) };
   const { apiKey, baseURL, model, timeoutMs } = deepSeekConfig();
   if (!apiKey) {
     return emptyAIResult(analysis, '未配置 DEEPSEEK_API_KEY');
